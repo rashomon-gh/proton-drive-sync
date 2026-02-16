@@ -1,5 +1,8 @@
 # Proton Drive Sync
 
+
+[![Tests](https://github.com/rashomon-gh/proton-drive-sync/actions/workflows/test.yml/badge.svg)](https://github.com/rashomon-gh/proton-drive-sync/actions/workflows/test.yml)
+
 A CLI tool to sync local directories to Proton Drive cloud storage. Written in Rust for performance and reliability. (This project is motivated from [DamianB-BitFlipper's client](https://github.com/DamianB-BitFlipper/proton-drive-sync), which is written in TS.)
 
 ## Installation
