@@ -1,6 +1,6 @@
 # Proton Drive Sync
 
-A CLI tool to sync local directories to Proton Drive cloud storage. Written in Rust for performance and reliability.
+A CLI tool to sync local directories to Proton Drive cloud storage. Written in Rust for performance and reliability. (This project is motivated from [DamianB-BitFlipper's client](https://github.com/DamianB-BitFlipper/proton-drive-sync), which is written in TS.)
 
 ## Installation
 
