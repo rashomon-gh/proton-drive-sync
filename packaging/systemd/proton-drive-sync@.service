@@ -1,0 +1,34 @@
+[Unit]
+Description=Proton Drive Sync Service
+Documentation=https://codeberg.org/rashomon/proton-drive-sync
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+ExecStart=/usr/local/bin/proton-drive-sync start --foreground
+Restart=on-failure
+RestartSec=5s
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=%h/.local/share/proton-drive-sync
+ReadWritePaths=%h/.config/proton-drive-sync
+ReadWritePaths=%h/.cache/proton-drive-sync
+
+# Allow access to sync directories (user will need to override)
+#ReadWritePaths=/path/to/sync/directory
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=proton-drive-sync
+
+# Resource limits
+LimitNOFILE=65536
+
+[Install]
+WantedBy=default.target

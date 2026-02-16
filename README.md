@@ -90,6 +90,58 @@ Start it with:
 proton-drive-sync dashboard
 ```
 
+## Running as a Service
+
+### Systemd (Linux)
+
+The project includes systemd service files for running as a background service.
+
+#### Quick Install
+
+```bash
+# Build and install the binary
+cargo build --release
+sudo cp target/release/proton-drive-sync /usr/local/bin/
+
+# Install the service (user service, recommended)
+cd packaging/systemd
+./install-service.sh
+
+# Enable and start
+systemctl --user enable proton-drive-sync
+systemctl --user start proton-drive-sync
+```
+
+#### Manual Install
+
+```bash
+# Copy service file
+mkdir -p ~/.config/systemd/user
+cp packaging/systemd/proton-drive-sync@.service ~/.config/systemd/user/
+
+# Reload and start
+systemctl --user daemon-reload
+systemctl --user enable --now proton-drive-sync
+```
+
+#### Service Management
+
+```bash
+# Check status
+systemctl --user status proton-drive-sync
+
+# View logs
+journalctl --user -u proton-drive-sync -f
+
+# Stop service
+systemctl --user stop proton-drive-sync
+
+# Restart service
+systemctl --user restart proton-drive-sync
+```
+
+For detailed systemd configuration and troubleshooting, see [packaging/systemd/README.md](packaging/systemd/README.md).
+
 ## Development
 
 ### Building
