@@ -1,0 +1,19 @@
+dist/
+.DS_Store
+*.log
+*.bun-build
+
+my_*
+
+
+# Added by cargo
+
+/target
+
+
+# editors and ides
+.idea/
+.vscode/
+
+# database
+*.db
