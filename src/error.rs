@@ -78,4 +78,3 @@ impl From<chrono::OutOfRangeError> for Error {
         Error::InvalidState(format!("Duration out of range: {}", err))
     }
 }
-

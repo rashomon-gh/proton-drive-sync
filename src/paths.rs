@@ -5,16 +5,18 @@ use std::path::{Path, PathBuf};
 
 /// Get data directory
 pub fn get_data_dir() -> Result<PathBuf> {
-    let data_dir = dirs::data_local_dir()
-        .ok_or_else(|| crate::error::Error::Config("Could not determine data directory".to_string()))?;
+    let data_dir = dirs::data_local_dir().ok_or_else(|| {
+        crate::error::Error::Config("Could not determine data directory".to_string())
+    })?;
 
     Ok(data_dir.join("proton-drive-sync"))
 }
 
 /// Get cache directory
 pub fn get_cache_dir() -> Result<PathBuf> {
-    let cache_dir = dirs::cache_dir()
-        .ok_or_else(|| crate::error::Error::Config("Could not determine cache directory".to_string()))?;
+    let cache_dir = dirs::cache_dir().ok_or_else(|| {
+        crate::error::Error::Config("Could not determine cache directory".to_string())
+    })?;
 
     Ok(cache_dir.join("proton-drive-sync"))
 }
@@ -23,7 +25,9 @@ pub fn get_cache_dir() -> Result<PathBuf> {
 pub fn get_log_dir() -> Result<PathBuf> {
     let log_dir = dirs::state_dir()
         .or_else(dirs::data_local_dir)
-        .ok_or_else(|| crate::error::Error::Config("Could not determine log directory".to_string()))?;
+        .ok_or_else(|| {
+            crate::error::Error::Config("Could not determine log directory".to_string())
+        })?;
 
     Ok(log_dir.join("proton-drive-sync").join("logs"))
 }

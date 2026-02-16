@@ -111,12 +111,10 @@ impl ConfigManager {
     }
 
     /// Add an exclude pattern
-    pub async fn add_exclude_pattern(
-        &mut self,
-        path: String,
-        globs: Vec<String>,
-    ) -> Result<()> {
-        self.config.exclude_patterns.push(crate::types::ExcludePattern { path, globs });
+    pub async fn add_exclude_pattern(&mut self, path: String, globs: Vec<String>) -> Result<()> {
+        self.config
+            .exclude_patterns
+            .push(crate::types::ExcludePattern { path, globs });
         self.save().await?;
         Ok(())
     }

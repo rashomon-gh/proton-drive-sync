@@ -47,11 +47,12 @@ impl FileWatcher {
         // Create watcher
         let (tx, mut rx) = tokio::sync::mpsc::channel(100);
 
-        let mut watcher = notify::recommended_watcher(move |res: std::result::Result<Event, _>| {
-            if let Ok(event) = res {
-                let _ = tx.blocking_send(event);
-            }
-        })?;
+        let mut watcher =
+            notify::recommended_watcher(move |res: std::result::Result<Event, _>| {
+                if let Ok(event) = res {
+                    let _ = tx.blocking_send(event);
+                }
+            })?;
 
         // Watch each sync directory
         for sync_dir in sync_dirs {
@@ -150,7 +151,8 @@ impl FileWatcher {
             .map_err(|_| Error::InvalidPath("Path not in sync directory".to_string()))?;
 
         let local_path = path.to_string_lossy().to_string();
-        let remote_path = crate::proton::PathUtils::join(&sync_dir_data.remote_root, &relative.to_string_lossy());
+        let remote_path =
+            crate::proton::PathUtils::join(&sync_dir_data.remote_root, &relative.to_string_lossy());
 
         // Check exclusions
         if Self::is_excluded(path, &config.lock().await.get().exclude_patterns) {
@@ -185,9 +187,7 @@ impl FileWatcher {
 
     /// Check if file is temporary
     fn is_temp_file(path: &Path) -> bool {
-        let file_name = path.file_name()
-            .and_then(|n| n.to_str())
-            .unwrap_or("");
+        let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
 
         // Skip hidden files (starting with .)
         if file_name.starts_with('.') {
@@ -207,7 +207,10 @@ impl FileWatcher {
     }
 
     /// Find sync directory for a path
-    fn find_sync_dir<'a>(path: &Path, config: &'a crate::types::Config) -> Result<Option<&'a crate::types::SyncDir>> {
+    fn find_sync_dir<'a>(
+        path: &Path,
+        config: &'a crate::types::Config,
+    ) -> Result<Option<&'a crate::types::SyncDir>> {
         for sync_dir in &config.sync_dirs {
             let base = Path::new(&sync_dir.source_path);
             if path.starts_with(base) {

@@ -48,7 +48,9 @@ impl JobQueue {
 
     /// Clean up old completed jobs
     pub async fn cleanup_old_jobs(&self, older_than: Duration) -> Result<u64> {
-        self.db.delete_completed_jobs(chrono::Duration::from_std(older_than)?).await
+        self.db
+            .delete_completed_jobs(chrono::Duration::from_std(older_than)?)
+            .await
     }
 
     /// Start background cleanup task

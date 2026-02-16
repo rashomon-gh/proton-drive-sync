@@ -253,8 +253,13 @@ impl SyncEngine {
                 drop(cfg);
 
                 for sync_dir in sync_dirs {
-                    if let Err(e) =
-                        crate::watcher::FileScanner::scan_directory(&db, &sync_dir.source_path, &sync_dir.remote_root, &exclusions).await
+                    if let Err(e) = crate::watcher::FileScanner::scan_directory(
+                        &db,
+                        &sync_dir.source_path,
+                        &sync_dir.remote_root,
+                        &exclusions,
+                    )
+                    .await
                     {
                         error!("Error scanning directory {}: {}", sync_dir.source_path, e);
                     }

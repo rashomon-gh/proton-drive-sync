@@ -168,8 +168,7 @@ impl ProtonClient {
             form = form.text("MIMEType", mt.to_string());
         }
 
-        let part = reqwest::multipart::Part::bytes(content)
-            .file_name(name.to_string());
+        let part = reqwest::multipart::Part::bytes(content).file_name(name.to_string());
         form = form.part("File", part);
 
         let response = self
@@ -516,8 +515,14 @@ mod tests {
 
     #[test]
     fn test_path_utils_parent() {
-        assert_eq!(PathUtils::parent("/folder/file.txt"), Some("/folder".to_string()));
-        assert_eq!(PathUtils::parent("/folder/subfolder/"), Some("/folder".to_string()));
+        assert_eq!(
+            PathUtils::parent("/folder/file.txt"),
+            Some("/folder".to_string())
+        );
+        assert_eq!(
+            PathUtils::parent("/folder/subfolder/"),
+            Some("/folder".to_string())
+        );
         assert_eq!(PathUtils::parent("/file.txt"), Some("/".to_string()));
         assert_eq!(PathUtils::parent("/"), None);
     }

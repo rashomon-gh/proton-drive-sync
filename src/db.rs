@@ -1,9 +1,7 @@
 //! Database module for SQLite operations
 
 use crate::error::{Error, Result};
-use crate::types::{
-    FileState, NodeMapping, SyncEvent, SyncEventType, SyncJob, SyncJobStatus,
-};
+use crate::types::{FileState, NodeMapping, SyncEvent, SyncEventType, SyncJob, SyncJobStatus};
 use chrono::{DateTime, Utc};
 use sqlx::{sqlite::SqliteConnectOptions, Row, SqlitePool};
 use std::path::PathBuf;
@@ -124,7 +122,9 @@ impl Db {
             .await?;
 
         // Clear received signals
-        sqlx::query("DELETE FROM signals").execute(&self.pool).await?;
+        sqlx::query("DELETE FROM signals")
+            .execute(&self.pool)
+            .await?;
 
         Ok(rows.into_iter().map(|r| r.0).collect())
     }
@@ -142,11 +142,10 @@ impl Db {
 
     /// Check if a flag is set
     pub async fn get_flag(&self, name: &str) -> Result<bool> {
-        let count: i64 =
-            sqlx::query_scalar("SELECT COUNT(*) FROM flags WHERE name = ?")
-                .bind(name)
-                .fetch_one(&self.pool)
-                .await?;
+        let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM flags WHERE name = ?")
+            .bind(name)
+            .fetch_one(&self.pool)
+            .await?;
         Ok(count > 0)
     }
 
@@ -201,24 +200,34 @@ impl Db {
         let jobs = rows
             .into_iter()
             .map(|row| {
-                let event_type_str: String = row.try_get("event_type")
+                let event_type_str: String = row
+                    .try_get("event_type")
                     .map_err(|e| Error::Database(e.into()))?;
-                let status_str: String = row.try_get("status")
+                let status_str: String = row
+                    .try_get("status")
                     .map_err(|e| Error::Database(e.into()))?;
 
                 Ok(SyncJob {
                     id: row.try_get("id").map_err(|e| Error::Database(e.into()))?,
                     event_type: parse_sync_event_type(&event_type_str),
-                    local_path: row.try_get("local_path").map_err(|e| Error::Database(e.into()))?,
-                    remote_path: row.try_get("remote_path").map_err(|e| Error::Database(e.into()))?,
+                    local_path: row
+                        .try_get("local_path")
+                        .map_err(|e| Error::Database(e.into()))?,
+                    remote_path: row
+                        .try_get("remote_path")
+                        .map_err(|e| Error::Database(e.into()))?,
                     status: parse_sync_job_status(&status_str),
                     retry_at: row.try_get("retry_at").ok(),
-                    n_retries: row.try_get("n_retries").map_err(|e| Error::Database(e.into()))?,
+                    n_retries: row
+                        .try_get("n_retries")
+                        .map_err(|e| Error::Database(e.into()))?,
                     last_error: row.try_get("last_error").ok(),
                     change_token: row.try_get("change_token").ok(),
                     old_local_path: row.try_get("old_local_path").ok(),
                     old_remote_path: row.try_get("old_remote_path").ok(),
-                    created_at: row.try_get("created_at").map_err(|e| Error::Database(e.into()))?,
+                    created_at: row
+                        .try_get("created_at")
+                        .map_err(|e| Error::Database(e.into()))?,
                 })
             })
             .collect::<Result<Vec<SyncJob>>>()?;
@@ -233,14 +242,12 @@ impl Db {
         status: SyncJobStatus,
         error: Option<&str>,
     ) -> Result<()> {
-        sqlx::query(
-            "UPDATE sync_jobs SET status = ?, last_error = ? WHERE id = ?",
-        )
-        .bind(status.to_string())
-        .bind(error)
-        .bind(id)
-        .execute(&self.pool)
-        .await?;
+        sqlx::query("UPDATE sync_jobs SET status = ?, last_error = ? WHERE id = ?")
+            .bind(status.to_string())
+            .bind(error)
+            .bind(id)
+            .execute(&self.pool)
+            .await?;
         Ok(())
     }
 
@@ -278,12 +285,10 @@ impl Db {
 
     /// Get job count by status
     pub async fn get_job_count(&self, status: SyncJobStatus) -> Result<i64> {
-        let count = sqlx::query_scalar::<_, i64>(
-            "SELECT COUNT(*) FROM sync_jobs WHERE status = ?",
-        )
-        .bind(status.to_string())
-        .fetch_one(&self.pool)
-        .await?;
+        let count = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM sync_jobs WHERE status = ?")
+            .bind(status.to_string())
+            .fetch_one(&self.pool)
+            .await?;
 
         Ok(count)
     }
@@ -300,7 +305,9 @@ impl Db {
         .await?;
 
         Ok(row.map(|r| {
-            let local_path: String = r.try_get("local_path").unwrap_or_else(|_| local_path.to_string());
+            let local_path: String = r
+                .try_get("local_path")
+                .unwrap_or_else(|_| local_path.to_string());
             let change_token: String = r.try_get("change_token").unwrap_or_default();
             let updated_at: DateTime<Utc> = r.try_get("updated_at").unwrap_or_else(|_| Utc::now());
 
@@ -348,7 +355,8 @@ impl Db {
             .map(|r| {
                 let local_path: String = r.try_get("local_path").unwrap_or_default();
                 let change_token: String = r.try_get("change_token").unwrap_or_default();
-                let updated_at: DateTime<Utc> = r.try_get("updated_at").unwrap_or_else(|_| Utc::now());
+                let updated_at: DateTime<Utc> =
+                    r.try_get("updated_at").unwrap_or_else(|_| Utc::now());
 
                 FileState {
                     local_path,
@@ -364,7 +372,11 @@ impl Db {
     // === Node mapping operations ===
 
     /// Get node mapping
-    pub async fn get_node_mapping(&self, local_path: &str, remote_path: &str) -> Result<Option<NodeMapping>> {
+    pub async fn get_node_mapping(
+        &self,
+        local_path: &str,
+        remote_path: &str,
+    ) -> Result<Option<NodeMapping>> {
         let row = sqlx::query(
             r#"
             SELECT local_path, remote_path, node_uid, parent_node_uid, is_directory, updated_at
@@ -378,8 +390,12 @@ impl Db {
         .await?;
 
         Ok(row.map(|r| {
-            let local_path: String = r.try_get("local_path").unwrap_or_else(|_| local_path.to_string());
-            let remote_path: String = r.try_get("remote_path").unwrap_or_else(|_| remote_path.to_string());
+            let local_path: String = r
+                .try_get("local_path")
+                .unwrap_or_else(|_| local_path.to_string());
+            let remote_path: String = r
+                .try_get("remote_path")
+                .unwrap_or_else(|_| remote_path.to_string());
             let node_uid: String = r.try_get("node_uid").unwrap_or_default();
             let parent_node_uid: String = r.try_get("parent_node_uid").unwrap_or_default();
             let is_directory: bool = r.try_get("is_directory").unwrap_or(false);
@@ -447,7 +463,8 @@ impl Db {
                 let node_uid: String = r.try_get("node_uid").unwrap_or_default();
                 let parent_node_uid: String = r.try_get("parent_node_uid").unwrap_or_default();
                 let is_directory: bool = r.try_get("is_directory").unwrap_or(false);
-                let updated_at: DateTime<Utc> = r.try_get("updated_at").unwrap_or_else(|_| Utc::now());
+                let updated_at: DateTime<Utc> =
+                    r.try_get("updated_at").unwrap_or_else(|_| Utc::now());
 
                 NodeMapping {
                     local_path,

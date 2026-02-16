@@ -2,9 +2,7 @@
 
 use crate::error::Result;
 use std::path::PathBuf;
-use tracing_subscriber::{
-    fmt, prelude::*, EnvFilter,
-};
+use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
 /// Initialize logging
 pub fn init(debug: bool) -> Result<()> {

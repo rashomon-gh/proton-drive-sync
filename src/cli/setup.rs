@@ -51,7 +51,10 @@ impl SetupCommand {
 
         loop {
             let source = Text::new("Local path to sync:")
-                .with_placeholder(&format!("{}/Documents", std::env::var("HOME").unwrap_or_default()))
+                .with_placeholder(&format!(
+                    "{}/Documents",
+                    std::env::var("HOME").unwrap_or_default()
+                ))
                 .prompt()
                 .map_err(|e| crate::error::Error::Config(format!("Prompt error: {}", e)))?;
 
@@ -96,10 +99,7 @@ impl SetupCommand {
 
         // Set delete behavior
         println!();
-        let delete_opts = vec![
-            "Move to trash (default)",
-            "Delete permanently",
-        ];
+        let delete_opts = vec!["Move to trash (default)", "Delete permanently"];
         let delete_behavior = Select::new("Remote delete behavior:", delete_opts)
             .prompt()
             .map_err(|e| crate::error::Error::Config(format!("Prompt error: {}", e)))?;

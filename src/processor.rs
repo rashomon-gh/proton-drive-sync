@@ -2,7 +2,7 @@
 
 use crate::db::Db;
 use crate::error::{Error, Result};
-use crate::proton::{ProtonClient, PathUtils};
+use crate::proton::{PathUtils, ProtonClient};
 use crate::types::{SyncEventType, SyncJob, SyncJobStatus};
 use chrono::{Duration, Utc};
 use std::path::Path;
@@ -82,7 +82,8 @@ impl JobProcessor {
                 // Check if we should retry
                 if job.n_retries < 5 {
                     // Calculate retry time with exponential backoff
-                    let retry_delay = std::time::Duration::from_secs(60 * 2_u64.pow(job.n_retries as u32));
+                    let retry_delay =
+                        std::time::Duration::from_secs(60 * 2_u64.pow(job.n_retries as u32));
                     let retry_at = Utc::now() + Duration::from_std(retry_delay).unwrap();
 
                     self.db.increment_job_retry(job.id, retry_at).await?;
@@ -175,10 +176,7 @@ impl JobProcessor {
         let folder_name = PathUtils::filename(&job.remote_path);
 
         // Create folder
-        let result = self
-            .client
-            .create_folder(&parent_id, &folder_name)
-            .await?;
+        let result = self.client.create_folder(&parent_id, &folder_name).await?;
 
         if !result.success {
             return Err(Error::Sync(
@@ -271,7 +269,9 @@ impl JobProcessor {
                     self.client.delete_node(&existing.node_uid).await?;
                 }
                 crate::types::RemoteDeleteBehavior::Permanent => {
-                    self.client.delete_node_permanent(&existing.node_uid).await?;
+                    self.client
+                        .delete_node_permanent(&existing.node_uid)
+                        .await?;
                 }
             }
 

@@ -249,7 +249,10 @@ impl AuthManager {
         let auth_response: AuthInfoResponse = response.json().await?;
 
         if auth_response.code != 1000 {
-            return Err(Error::Auth(format!("Auth info error code: {}", auth_response.code)));
+            return Err(Error::Auth(format!(
+                "Auth info error code: {}",
+                auth_response.code
+            )));
         }
 
         Ok(auth_response)
@@ -327,12 +330,7 @@ impl AuthManager {
             srp_session: srp_session.to_string(),
         };
 
-        let response = self
-            .client
-            .post(&url)
-            .json(&request)
-            .send()
-            .await?;
+        let response = self.client.post(&url).json(&request).send().await?;
 
         if !response.status().is_success() {
             return Err(Error::Auth(format!(
@@ -344,7 +342,10 @@ impl AuthManager {
         let auth_response: SrpAuthResponse = response.json().await?;
 
         if auth_response.code != 1000 {
-            return Err(Error::Auth(format!("SRP auth error code: {}", auth_response.code)));
+            return Err(Error::Auth(format!(
+                "SRP auth error code: {}",
+                auth_response.code
+            )));
         }
 
         Ok(auth_response)
@@ -438,13 +439,19 @@ impl AuthManager {
             .await?;
 
         if !response.status().is_success() {
-            return Err(Error::Auth(format!("Get keys failed: {}", response.status())));
+            return Err(Error::Auth(format!(
+                "Get keys failed: {}",
+                response.status()
+            )));
         }
 
         let keys_response: KeysResponse = response.json().await?;
 
         if keys_response.code != 1000 {
-            return Err(Error::Auth(format!("Get keys error code: {}", keys_response.code)));
+            return Err(Error::Auth(format!(
+                "Get keys error code: {}",
+                keys_response.code
+            )));
         }
 
         // Find primary key
@@ -560,7 +567,9 @@ mod tests {
         assert!(auth_manager.verify_password(password, &hash).unwrap());
 
         // Verify incorrect password
-        assert!(!auth_manager.verify_password("wrong_password", &hash).unwrap());
+        assert!(!auth_manager
+            .verify_password("wrong_password", &hash)
+            .unwrap());
     }
 
     #[test]
