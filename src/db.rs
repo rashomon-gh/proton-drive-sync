@@ -200,34 +200,22 @@ impl Db {
         let jobs = rows
             .into_iter()
             .map(|row| {
-                let event_type_str: String = row
-                    .try_get("event_type")
-                    .map_err(Error::Database)?;
-                let status_str: String = row
-                    .try_get("status")
-                    .map_err(Error::Database)?;
+                let event_type_str: String = row.try_get("event_type").map_err(Error::Database)?;
+                let status_str: String = row.try_get("status").map_err(Error::Database)?;
 
                 Ok(SyncJob {
                     id: row.try_get("id").map_err(Error::Database)?,
                     event_type: parse_sync_event_type(&event_type_str),
-                    local_path: row
-                        .try_get("local_path")
-                        .map_err(Error::Database)?,
-                    remote_path: row
-                        .try_get("remote_path")
-                        .map_err(Error::Database)?,
+                    local_path: row.try_get("local_path").map_err(Error::Database)?,
+                    remote_path: row.try_get("remote_path").map_err(Error::Database)?,
                     status: parse_sync_job_status(&status_str),
                     retry_at: row.try_get("retry_at").ok(),
-                    n_retries: row
-                        .try_get("n_retries")
-                        .map_err(Error::Database)?,
+                    n_retries: row.try_get("n_retries").map_err(Error::Database)?,
                     last_error: row.try_get("last_error").ok(),
                     change_token: row.try_get("change_token").ok(),
                     old_local_path: row.try_get("old_local_path").ok(),
                     old_remote_path: row.try_get("old_remote_path").ok(),
-                    created_at: row
-                        .try_get("created_at")
-                        .map_err(Error::Database)?,
+                    created_at: row.try_get("created_at").map_err(Error::Database)?,
                 })
             })
             .collect::<Result<Vec<SyncJob>>>()?;
