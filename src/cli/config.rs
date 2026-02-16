@@ -3,7 +3,7 @@
 use crate::config::ConfigManager;
 use crate::error::Result;
 use clap::Subcommand;
-use inquire::{Confirm, Text};
+use inquire::Text;
 
 /// Config command
 #[derive(Subcommand, Debug)]

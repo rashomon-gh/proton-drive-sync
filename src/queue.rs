@@ -4,8 +4,7 @@ use crate::db::Db;
 use crate::error::Result;
 use crate::types::{SyncJob, SyncJobStatus};
 use std::time::Duration;
-use tokio::time::interval;
-use tracing::{debug, error, info, warn};
+use tracing::{error, info};
 
 /// Job queue manager
 #[derive(Clone)]

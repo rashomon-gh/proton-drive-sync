@@ -8,7 +8,6 @@ use crate::paths::get_data_dir;
 use crate::sync::SyncEngine;
 use clap::Parser;
 use std::sync::Arc;
-use std::time::Duration;
 use tokio::sync::Mutex;
 
 /// Reconcile command options

@@ -4,12 +4,10 @@ use crate::db::Db;
 use crate::error::{Error, Result};
 use crate::proton::{ProtonClient, PathUtils};
 use crate::types::{SyncEventType, SyncJob, SyncJobStatus};
-use backoff::ExponentialBackoff;
 use chrono::{Duration, Utc};
-use std::fs;
 use std::path::Path;
 use tokio::sync::Semaphore;
-use tracing::{debug, error, info, warn};
+use tracing::{error, info, warn};
 
 /// Job processor
 pub struct JobProcessor {
@@ -287,7 +285,7 @@ impl JobProcessor {
     }
 
     /// Get or create parent node
-    async fn get_or_create_parent_node(&self, remote_path: &str) -> Result<String> {
+    async fn get_or_create_parent_node(&self, _remote_path: &str) -> Result<String> {
         // Check if parent exists in mappings
         // For simplicity, we'll just use the root ID
         // In a full implementation, you'd walk up the path

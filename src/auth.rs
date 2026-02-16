@@ -8,7 +8,7 @@ use bcrypt::{hash, verify, DEFAULT_COST};
 use rand::Rng;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256, Sha512};
+use sha2::{Digest, Sha512};
 
 /// SRP authentication configuration
 const SRP_VERSION: &str = "2048";
@@ -218,7 +218,7 @@ impl AuthManager {
             )));
         }
 
-        let mut auth_response: AuthInfoResponse = response.json().await?;
+        let auth_response: AuthInfoResponse = response.json().await?;
 
         if auth_response.Code != 1000 {
             return Err(Error::Auth(format!("Auth info error code: {}", auth_response.Code)));
@@ -399,7 +399,7 @@ impl AuthManager {
     }
 
     /// Get user keys
-    pub async fn get_keys(&self, session: &Session, key_password: &str) -> Result<String> {
+    pub async fn get_keys(&self, session: &Session, _key_password: &str) -> Result<String> {
         let url = format!("{}{}", self.api_base, KEYS_ENDPOINT);
 
         let response = self
@@ -467,7 +467,7 @@ impl AuthManager {
     }
 
     /// Unlock key (decrypt private key)
-    pub fn unlock_key(&self, encrypted_key: &str, key_password: &str) -> Result<String> {
+    pub fn unlock_key(&self, encrypted_key: &str, _key_password: &str) -> Result<String> {
         // Simplified key decryption
         // In production, use sequoia-openpgp to decrypt the actual PGP key
         Ok(encrypted_key.to_string())

@@ -2,7 +2,7 @@
 
 use crate::config::ConfigManager;
 use crate::error::Result;
-use crate::types::{RemoteDeleteBehavior, SyncDir};
+use crate::types::RemoteDeleteBehavior;
 use clap::Parser;
 use inquire::{Confirm, Select, Text};
 

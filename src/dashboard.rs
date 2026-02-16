@@ -2,14 +2,12 @@
 
 use crate::config::ConfigManager;
 use crate::error::Result;
-use crate::types::SyncJobStatus;
 use axum::{
     extract::State,
     response::{Html, IntoResponse, Json},
     routing::get,
     Router,
 };
-use serde::Serialize;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tracing::info;

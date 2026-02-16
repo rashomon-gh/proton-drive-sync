@@ -1,15 +1,13 @@
 //! Authentication CLI command
 
 use crate::auth::AuthManager;
-use crate::config::ConfigManager;
 use crate::db::Db;
 use crate::error::Result;
-use crate::paths::{get_data_dir, get_log_dir};
+use crate::paths::get_data_dir;
 use crate::types::Session;
 use clap::Subcommand;
 use inquire::{Password, Text};
 use keyring::Entry;
-use tracing::info;
 
 /// Authentication command
 #[derive(Subcommand, Debug)]

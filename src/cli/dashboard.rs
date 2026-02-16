@@ -2,7 +2,6 @@
 
 use crate::config::ConfigManager;
 use crate::error::Result;
-use crate::types::Session;
 use clap::Parser;
 use std::sync::Arc;
 use tokio::sync::Mutex;

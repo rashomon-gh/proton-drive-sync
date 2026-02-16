@@ -3,7 +3,6 @@
 use crate::error::{Error, Result};
 use crate::types::Config;
 use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use tokio::fs;
 

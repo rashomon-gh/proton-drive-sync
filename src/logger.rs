@@ -3,7 +3,7 @@
 use crate::error::Result;
 use std::path::PathBuf;
 use tracing_subscriber::{
-    fmt, prelude::*, registry, EnvFilter,
+    fmt, prelude::*, EnvFilter,
 };
 
 /// Initialize logging

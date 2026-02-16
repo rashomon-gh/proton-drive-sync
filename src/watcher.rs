@@ -4,8 +4,7 @@ use crate::config::ConfigManager;
 use crate::db::Db;
 use crate::error::{Error, Result};
 use crate::types::{SyncEvent, SyncEventType};
-use notify::{Config, Event, EventKind, RecursiveMode, Watcher};
-use std::collections::HashMap;
+use notify::{Event, EventKind, RecursiveMode, Watcher};
 use std::path::Path;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -220,7 +219,7 @@ impl FileWatcher {
 
     /// Check if path is excluded
     fn is_excluded(path: &Path, patterns: &[crate::types::ExcludePattern]) -> bool {
-        let path_str = path.to_string_lossy();
+        let _path_str = path.to_string_lossy();
 
         for pattern in patterns {
             for glob in &pattern.globs {

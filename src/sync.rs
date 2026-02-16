@@ -2,7 +2,7 @@
 
 use crate::config::ConfigManager;
 use crate::db::Db;
-use crate::error::{Error, Result};
+use crate::error::Result;
 use crate::processor::JobProcessor;
 use crate::proton::ProtonClient;
 use crate::queue::JobQueue;
@@ -11,8 +11,8 @@ use crate::watcher::FileWatcher;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::Mutex;
-use tokio::time::{interval, sleep};
-use tracing::{debug, error, info, warn};
+use tokio::time::interval;
+use tracing::{debug, error, info};
 
 /// Sync engine state
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -173,7 +173,7 @@ impl SyncEngine {
         let db = self.db.clone();
         let processor = self.processor.clone();
         let state = self.state.clone();
-        let queue = self.queue.clone();
+        let _queue = self.queue.clone();
 
         tokio::spawn(async move {
             let mut interval = interval(Duration::from_secs(1));
@@ -285,7 +285,7 @@ impl SyncEngine {
                         let new_concurrency = cfg.get().sync_concurrency;
                         drop(cfg);
 
-                        let mut proc = processor.lock().await;
+                        let _proc = processor.lock().await;
                         // Note: In a full implementation, you'd update the semaphore size
                         // For now, this is a placeholder
                         info!("Processor concurrency updated to {}", new_concurrency);
