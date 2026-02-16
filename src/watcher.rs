@@ -243,7 +243,7 @@ impl FileWatcher {
 
         let mtime = metadata
             .modified()
-            .map_err(|e| Error::Io(e))?
+            .map_err(Error::Io)?
             .duration_since(std::time::UNIX_EPOCH)
             .map_err(|_| Error::InvalidPath("Invalid modification time".to_string()))?
             .as_secs();
@@ -341,7 +341,7 @@ impl FileScanner {
 
         let mtime = metadata
             .modified()
-            .map_err(|e| Error::Io(e))?
+            .map_err(Error::Io)?
             .duration_since(std::time::UNIX_EPOCH)
             .map_err(|_| Error::InvalidPath("Invalid modification time".to_string()))?
             .as_secs();

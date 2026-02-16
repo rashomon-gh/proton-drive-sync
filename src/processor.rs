@@ -127,7 +127,7 @@ impl JobProcessor {
             .first()
             .map(|m| m.to_string())
             .or_else(|| {
-                if path.extension().map_or(false, |e| e == "txt") {
+                if path.extension().is_some_and(|e| e == "txt") {
                     Some("text/plain".to_string())
                 } else {
                     Some("application/octet-stream".to_string())
