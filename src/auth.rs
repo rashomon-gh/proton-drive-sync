@@ -10,12 +10,7 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha512};
 
-/// SRP authentication configuration
-const SRP_VERSION: &str = "2048";
 const PROTON_API_BASE: &str = "https://mail-api.proton.me";
-
-/// SRP modulus endpoint
-const SRP_MODULUS_ENDPOINT: &str = "/core/v4/auth/modulus";
 
 /// SRP auth endpoint
 const SRP_AUTH_ENDPOINT: &str = "/core/v4/auth/srp";
@@ -38,92 +33,125 @@ const ADDRESSES_ENDPOINT: &str = "/core/v4/addresses";
 /// SRP authentication request
 #[derive(Debug, Serialize)]
 struct SrpAuthRequest {
-    Username: String,
-    ClientEphemeral: String,
-    ClientProof: String,
-    SrpSession: String,
+    #[serde(rename = "Username")]
+    username: String,
+    #[serde(rename = "ClientEphemeral")]
+    client_ephemeral: String,
+    #[serde(rename = "ClientProof")]
+    client_proof: String,
+    #[serde(rename = "SrpSession")]
+    srp_session: String,
 }
 
 /// SRP authentication response
 #[derive(Debug, Deserialize)]
 struct SrpAuthResponse {
-    Code: i32,
-    ServerProof: String,
-    AccessToken: String,
-    RefreshToken: String,
-    UID: String,
-    ServerEphemeral: Option<String>,
-    Version: Option<i64>,
-    Modulus: Option<String>,
-    Salt: Option<String>,
+    #[serde(rename = "Code")]
+    code: i32,
+    #[serde(rename = "ServerProof")]
+    server_proof: String,
+    #[serde(rename = "AccessToken")]
+    access_token: String,
+    #[serde(rename = "RefreshToken")]
+    refresh_token: String,
+    #[serde(rename = "UID")]
+    uid: String,
 }
 
 /// Auth info response
 #[derive(Debug, Deserialize)]
 struct AuthInfoResponse {
-    Code: i32,
-    Modulus: String,
-    ServerEphemeral: String,
-    Version: i64,
-    Salt: String,
-    SrpSession: String,
-    TwoFactorEnabled: bool,
+    #[serde(rename = "Code")]
+    code: i32,
+    modulus: String,
+    #[serde(rename = "ServerEphemeral")]
+    server_ephemeral: String,
+    #[serde(rename = "Version")]
+    #[allow(dead_code)]
+    version: i64,
+    salt: String,
+    #[serde(rename = "SrpSession")]
+    srp_session: String,
+    #[serde(rename = "TwoFactorEnabled")]
+    #[allow(dead_code)]
+    two_factor_enabled: bool,
 }
 
 /// Session fork response
 #[derive(Debug, Deserialize)]
 struct SessionForkResponse {
-    Code: i32,
-    AccessToken: String,
-    RefreshToken: String,
-    UID: String,
+    #[serde(rename = "Code")]
+    code: i32,
+    #[serde(rename = "AccessToken")]
+    access_token: String,
+    #[serde(rename = "RefreshToken")]
+    refresh_token: String,
+    #[serde(rename = "UID")]
+    uid: String,
 }
 
 /// Session refresh response
 #[derive(Debug, Deserialize)]
 struct SessionRefreshResponse {
-    Code: i32,
-    AccessToken: String,
-    RefreshToken: String,
-    ExpiresIn: i64,
+    #[serde(rename = "Code")]
+    code: i32,
+    #[serde(rename = "AccessToken")]
+    access_token: String,
+    #[serde(rename = "RefreshToken")]
+    refresh_token: String,
+    #[serde(rename = "ExpiresIn")]
+    #[allow(dead_code)]
+    expires_in: i64,
 }
 
 /// Keys response
 #[derive(Debug, Deserialize)]
 struct KeysResponse {
-    Code: i32,
-    Keys: Vec<KeyData>,
-    KeySalting: Option<KeySaltingData>,
+    #[serde(rename = "Code")]
+    code: i32,
+    keys: Vec<KeyData>,
+    #[serde(rename = "KeySalting")]
+    #[allow(dead_code)]
+    key_salting: Option<KeySaltingData>,
 }
 
 /// Key data
 #[derive(Debug, Deserialize)]
 struct KeyData {
-    ID: String,
-    Primary: i32,
-    PrivateKey: String,
+    #[serde(rename = "ID")]
+    #[allow(dead_code)]
+    id: String,
+    #[serde(rename = "Primary")]
+    primary: i32,
+    #[serde(rename = "PrivateKey")]
+    private_key: String,
 }
 
 /// Key salting data
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 struct KeySaltingData {
-   Iteration: i64,
-    Salt: String,
+    iteration: i64,
+    salt: String,
 }
 
 /// Addresses response
 #[derive(Debug, Deserialize)]
 struct AddressesResponse {
-    Code: i32,
-    Addresses: Vec<AddressApiData>,
+    #[serde(rename = "Code")]
+    code: i32,
+    addresses: Vec<AddressApiData>,
 }
 
 /// Address API data
 #[derive(Debug, Deserialize)]
 struct AddressApiData {
-    ID: String,
-    Email: String,
-    ReceiveKey: Option<String>,
+    #[serde(rename = "ID")]
+    #[allow(dead_code)]
+    id: String,
+    email: String,
+    #[serde(rename = "ReceiveKey")]
+    receive_key: Option<String>,
 }
 
 /// Authentication manager
@@ -155,7 +183,7 @@ impl AuthManager {
         let auth_info = self.get_auth_info(&username).await?;
 
         // Step 2: Hash password with bcrypt
-        let password_hash = self.bcrypt_hash_password(&password, &auth_info.Salt)?;
+        let password_hash = self.bcrypt_hash_password(&password, &auth_info.salt)?;
 
         // Step 3: Generate client ephemeral
         let client_ephemeral = self.generate_client_ephemeral();
@@ -164,10 +192,10 @@ impl AuthManager {
         let client_proof = self.generate_client_proof(
             &username,
             &password_hash,
-            &auth_info.Modulus,
-            &auth_info.ServerEphemeral,
+            &auth_info.modulus,
+            &auth_info.server_ephemeral,
             &client_ephemeral,
-            &auth_info.Salt,
+            &auth_info.salt,
         )?;
 
         // Step 5: Send authentication request
@@ -176,23 +204,23 @@ impl AuthManager {
                 &username,
                 &client_ephemeral,
                 &client_proof,
-                &auth_info.SrpSession,
+                &auth_info.srp_session,
             )
             .await?;
 
         // Verify server proof
         self.verify_server_proof(
             &password_hash,
-            &auth_info.Modulus,
-            &auth_info.ServerEphemeral,
+            &auth_info.modulus,
+            &auth_info.server_ephemeral,
             &client_ephemeral,
-            &response.ServerProof,
+            &response.server_proof,
         )?;
 
         Ok(Session {
-            uid: response.UID,
-            access_token: response.AccessToken,
-            refresh_token: response.RefreshToken,
+            uid: response.uid,
+            access_token: response.access_token,
+            refresh_token: response.refresh_token,
             key_password: None,
             primary_key: None,
         })
@@ -220,8 +248,8 @@ impl AuthManager {
 
         let auth_response: AuthInfoResponse = response.json().await?;
 
-        if auth_response.Code != 1000 {
-            return Err(Error::Auth(format!("Auth info error code: {}", auth_response.Code)));
+        if auth_response.code != 1000 {
+            return Err(Error::Auth(format!("Auth info error code: {}", auth_response.code)));
         }
 
         Ok(auth_response)
@@ -293,10 +321,10 @@ impl AuthManager {
         let url = format!("{}{}", self.api_base, SRP_AUTH_ENDPOINT);
 
         let request = SrpAuthRequest {
-            Username: username.to_string(),
-            ClientEphemeral: client_ephemeral.to_string(),
-            ClientProof: client_proof.to_string(),
-            SrpSession: srp_session.to_string(),
+            username: username.to_string(),
+            client_ephemeral: client_ephemeral.to_string(),
+            client_proof: client_proof.to_string(),
+            srp_session: srp_session.to_string(),
         };
 
         let response = self
@@ -315,8 +343,8 @@ impl AuthManager {
 
         let auth_response: SrpAuthResponse = response.json().await?;
 
-        if auth_response.Code != 1000 {
-            return Err(Error::Auth(format!("SRP auth error code: {}", auth_response.Code)));
+        if auth_response.code != 1000 {
+            return Err(Error::Auth(format!("SRP auth error code: {}", auth_response.code)));
         }
 
         Ok(auth_response)
@@ -342,17 +370,17 @@ impl AuthManager {
 
         let fork_response: SessionForkResponse = response.json().await?;
 
-        if fork_response.Code != 1000 {
+        if fork_response.code != 1000 {
             return Err(Error::Auth(format!(
                 "Session fork error code: {}",
-                fork_response.Code
+                fork_response.code
             )));
         }
 
         Ok(Session {
-            uid: fork_response.UID,
-            access_token: fork_response.AccessToken,
-            refresh_token: fork_response.RefreshToken,
+            uid: fork_response.uid,
+            access_token: fork_response.access_token,
+            refresh_token: fork_response.refresh_token,
             key_password: session.key_password.clone(),
             primary_key: session.primary_key.clone(),
         })
@@ -382,17 +410,17 @@ impl AuthManager {
 
         let refresh_response: SessionRefreshResponse = response.json().await?;
 
-        if refresh_response.Code != 1000 {
+        if refresh_response.code != 1000 {
             return Err(Error::Auth(format!(
                 "Session refresh error code: {}",
-                refresh_response.Code
+                refresh_response.code
             )));
         }
 
         Ok(Session {
             uid: session.uid.clone(),
-            access_token: refresh_response.AccessToken,
-            refresh_token: refresh_response.RefreshToken,
+            access_token: refresh_response.access_token,
+            refresh_token: refresh_response.refresh_token,
             key_password: session.key_password.clone(),
             primary_key: session.primary_key.clone(),
         })
@@ -415,18 +443,18 @@ impl AuthManager {
 
         let keys_response: KeysResponse = response.json().await?;
 
-        if keys_response.Code != 1000 {
-            return Err(Error::Auth(format!("Get keys error code: {}", keys_response.Code)));
+        if keys_response.code != 1000 {
+            return Err(Error::Auth(format!("Get keys error code: {}", keys_response.code)));
         }
 
         // Find primary key
         let primary_key = keys_response
-            .Keys
+            .keys
             .iter()
-            .find(|k| k.Primary == 1)
+            .find(|k| k.primary == 1)
             .ok_or_else(|| Error::Auth("No primary key found".to_string()))?;
 
-        Ok(primary_key.PrivateKey.clone())
+        Ok(primary_key.private_key.clone())
     }
 
     /// Get user addresses
@@ -449,19 +477,19 @@ impl AuthManager {
 
         let addresses_response: AddressesResponse = response.json().await?;
 
-        if addresses_response.Code != 1000 {
+        if addresses_response.code != 1000 {
             return Err(Error::Auth(format!(
                 "Get addresses error code: {}",
-                addresses_response.Code
+                addresses_response.code
             )));
         }
 
         Ok(addresses_response
-            .Addresses
+            .addresses
             .into_iter()
             .map(|a| AddressData {
-                email: a.Email,
-                receive_key: a.ReceiveKey,
+                email: a.email,
+                receive_key: a.receive_key,
             })
             .collect())
     }

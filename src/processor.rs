@@ -13,6 +13,7 @@ use tracing::{error, info, warn};
 pub struct JobProcessor {
     db: Db,
     client: ProtonClient,
+    #[allow(dead_code)]
     concurrency: usize,
     semaphore: Semaphore,
     remote_delete_behavior: crate::types::RemoteDeleteBehavior,

@@ -13,79 +13,105 @@ const DRIVE_API_BASE: &str = "https://drive-api.proton.me";
 /// Drive nodes endpoint
 const NODES_ENDPOINT: &str = "/drive/v2/nodes";
 
-/// Drive share endpoint
-const SHARE_ENDPOINT: &str = "/drive/v2/share";
-
 /// Drive files endpoint
 const FILES_ENDPOINT: &str = "/drive/v2/files";
 
 /// Create node request
 #[derive(Debug, Serialize)]
 struct CreateNodeRequest {
-    ParentLinkID: String,
-    NodeName: String,
-    NodeType: String,
+    #[serde(rename = "ParentLinkID")]
+    parent_link_id: String,
+    #[serde(rename = "NodeName")]
+    node_name: String,
+    #[serde(rename = "NodeType")]
+    node_type: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    ContentKeyPacket: Option<String>,
+    #[serde(rename = "ContentKeyPacket")]
+    content_key_packet: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    Signature: Option<String>,
+    #[serde(rename = "Signature")]
+    signature: Option<String>,
 }
 
 /// Create node response
 #[derive(Debug, Deserialize)]
 struct CreateNodeResponse {
-    Code: i32,
-    Node: Option<NodeApiResponse>,
+    #[serde(rename = "Code")]
+    code: i32,
+    #[serde(rename = "Node")]
+    node: Option<NodeApiResponse>,
 }
 
 /// Node API response
 #[derive(Debug, Deserialize)]
 struct NodeApiResponse {
-    UID: String,
-    ParentLinkID: String,
-    Name: String,
-    NodeType: String,
-    State: i32,
-    Hash: Option<String>,
-    Size: Option<i64>,
-    MIMEType: Option<String>,
-    ActiveRevision: Option<RevisionApiResponse>,
+    #[serde(rename = "UID")]
+    uid: String,
+    #[serde(rename = "ParentLinkID")]
+    parent_link_id: String,
+    #[serde(rename = "Name")]
+    name: String,
+    #[serde(rename = "NodeType")]
+    node_type: String,
+    #[serde(rename = "State")]
+    #[allow(dead_code)]
+    state: i32,
+    #[serde(rename = "Hash")]
+    #[allow(dead_code)]
+    hash: Option<String>,
+    #[serde(rename = "Size")]
+    #[allow(dead_code)]
+    size: Option<i64>,
+    #[serde(rename = "MIMEType")]
+    mime_type: Option<String>,
+    #[serde(rename = "ActiveRevision")]
+    active_revision: Option<RevisionApiResponse>,
 }
 
 /// Revision API response
 #[derive(Debug, Deserialize)]
 struct RevisionApiResponse {
-    ID: String,
-    Size: Option<i64>,
-    ManifestSignature: Option<String>,
+    #[serde(rename = "ID")]
+    id: String,
+    #[serde(rename = "Size")]
+    size: Option<i64>,
+    #[serde(rename = "ManifestSignature")]
+    manifest_signature: Option<String>,
 }
 
 /// Delete node response
 #[derive(Debug, Deserialize)]
 struct DeleteNodeResponse {
-    Code: i32,
+    #[serde(rename = "Code")]
+    code: i32,
 }
 
 /// Rename node request
 #[derive(Debug, Serialize)]
 struct RenameNodeRequest {
-    Name: String,
+    #[serde(rename = "Name")]
+    name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    Signature: Option<String>,
+    #[serde(rename = "Signature")]
+    signature: Option<String>,
 }
 
 /// Rename node response
 #[derive(Debug, Deserialize)]
 struct RenameNodeResponse {
-    Code: i32,
-    Node: Option<NodeApiResponse>,
+    #[serde(rename = "Code")]
+    code: i32,
+    #[serde(rename = "Node")]
+    node: Option<NodeApiResponse>,
 }
 
 /// List nodes response
 #[derive(Debug, Deserialize)]
 struct ListNodesResponse {
-    Code: i32,
-    Nodes: Vec<NodeApiResponse>,
+    #[serde(rename = "Code")]
+    code: i32,
+    #[serde(rename = "Nodes")]
+    nodes: Vec<NodeApiResponse>,
 }
 
 /// Proton Drive client
@@ -168,11 +194,11 @@ impl ProtonClient {
 
                 let create_response: CreateNodeResponse = resp.json().await?;
 
-                if create_response.Code == 1000 {
-                    if let Some(node) = create_response.Node {
+                if create_response.code == 1000 {
+                    if let Some(node) = create_response.node {
                         return Ok(CreateResult {
                             success: true,
-                            node_uid: Some(node.UID),
+                            node_uid: Some(node.uid),
                             error: None,
                         });
                     }
@@ -181,7 +207,7 @@ impl ProtonClient {
                 Ok(CreateResult {
                     success: false,
                     node_uid: None,
-                    error: Some(format!("API error code: {}", create_response.Code)),
+                    error: Some(format!("API error code: {}", create_response.code)),
                 })
             }
             Err(e) => Ok(CreateResult {
@@ -197,11 +223,11 @@ impl ProtonClient {
         let url = format!("{}{}", self.api_base, NODES_ENDPOINT);
 
         let request = CreateNodeRequest {
-            ParentLinkID: parent_id.to_string(),
-            NodeName: name.to_string(),
-            NodeType: "folder".to_string(),
-            ContentKeyPacket: None,
-            Signature: None,
+            parent_link_id: parent_id.to_string(),
+            node_name: name.to_string(),
+            node_type: "folder".to_string(),
+            content_key_packet: None,
+            signature: None,
         };
 
         let response = self
@@ -226,11 +252,11 @@ impl ProtonClient {
 
                 let create_response: CreateNodeResponse = resp.json().await?;
 
-                if create_response.Code == 1000 {
-                    if let Some(node) = create_response.Node {
+                if create_response.code == 1000 {
+                    if let Some(node) = create_response.node {
                         return Ok(CreateResult {
                             success: true,
-                            node_uid: Some(node.UID),
+                            node_uid: Some(node.uid),
                             error: None,
                         });
                     }
@@ -239,7 +265,7 @@ impl ProtonClient {
                 Ok(CreateResult {
                     success: false,
                     node_uid: None,
-                    error: Some(format!("API error code: {}", create_response.Code)),
+                    error: Some(format!("API error code: {}", create_response.code)),
                 })
             }
             Err(e) => Ok(CreateResult {
@@ -286,10 +312,10 @@ impl ProtonClient {
 
         let delete_response: DeleteNodeResponse = response.json().await?;
 
-        if delete_response.Code != 1000 {
+        if delete_response.code != 1000 {
             return Err(Error::ProtonApi(format!(
                 "Delete error code: {}",
-                delete_response.Code
+                delete_response.code
             )));
         }
 
@@ -301,8 +327,8 @@ impl ProtonClient {
         let url = format!("{}{}/{}", self.api_base, NODES_ENDPOINT, node_id);
 
         let request = RenameNodeRequest {
-            Name: new_name.to_string(),
-            Signature: None,
+            name: new_name.to_string(),
+            signature: None,
         };
 
         let response = self
@@ -322,14 +348,14 @@ impl ProtonClient {
 
         let rename_response: RenameNodeResponse = response.json().await?;
 
-        if rename_response.Code != 1000 {
+        if rename_response.code != 1000 {
             return Err(Error::ProtonApi(format!(
                 "Rename error code: {}",
-                rename_response.Code
+                rename_response.code
             )));
         }
 
-        Ok(rename_response.Node.unwrap().UID)
+        Ok(rename_response.node.unwrap().uid)
     }
 
     /// List nodes in a folder
@@ -353,26 +379,26 @@ impl ProtonClient {
 
         let list_response: ListNodesResponse = response.json().await?;
 
-        if list_response.Code != 1000 {
+        if list_response.code != 1000 {
             return Err(Error::ProtonApi(format!(
                 "List nodes error code: {}",
-                list_response.Code
+                list_response.code
             )));
         }
 
         Ok(list_response
-            .Nodes
+            .nodes
             .into_iter()
             .map(|n| NodeData {
-                uid: n.UID,
-                parent_uid: Some(n.ParentLinkID),
-                name: n.Name,
-                node_type: n.NodeType,
-                media_type: n.MIMEType,
-                active_revision: n.ActiveRevision.map(|r| crate::types::RevisionData {
-                    uid: r.ID,
-                    size: r.Size,
-                    manifest_signature: r.ManifestSignature,
+                uid: n.uid,
+                parent_uid: Some(n.parent_link_id),
+                name: n.name,
+                node_type: n.node_type,
+                media_type: n.mime_type,
+                active_revision: n.active_revision.map(|r| crate::types::RevisionData {
+                    uid: r.id,
+                    size: r.size,
+                    manifest_signature: r.manifest_signature,
                 }),
             })
             .collect())

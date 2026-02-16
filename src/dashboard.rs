@@ -214,8 +214,3 @@ pub const DASHBOARD_HTML: &str = r#"<!DOCTYPE html>
 </body>
 </html>
 "#;
-
-/// Dashboard index handler with inline HTML
-async fn index_html() -> Html<&'static str> {
-    Html(DASHBOARD_HTML)
-}

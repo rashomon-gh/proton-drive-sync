@@ -27,6 +27,7 @@ pub enum SyncState {
 pub struct SyncEngine {
     db: Db,
     config: Arc<Mutex<ConfigManager>>,
+    #[allow(dead_code)]
     session: Session,
     state: Arc<Mutex<SyncState>>,
     watcher: Arc<Mutex<FileWatcher>>,
