@@ -200,3 +200,99 @@ pub struct SyncEvent {
     pub old_local_path: Option<String>,
     pub old_remote_path: Option<String>,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_sync_event_type_display() {
+        assert_eq!(SyncEventType::CreateFile.to_string(), "CREATE_FILE");
+        assert_eq!(SyncEventType::CreateDir.to_string(), "CREATE_DIR");
+        assert_eq!(SyncEventType::Update.to_string(), "UPDATE");
+        assert_eq!(SyncEventType::Delete.to_string(), "DELETE");
+    }
+
+    #[test]
+    fn test_sync_job_status_display() {
+        assert_eq!(SyncJobStatus::Pending.to_string(), "PENDING");
+        assert_eq!(SyncJobStatus::Processing.to_string(), "PROCESSING");
+        assert_eq!(SyncJobStatus::Synced.to_string(), "SYNCED");
+        assert_eq!(SyncJobStatus::Blocked.to_string(), "BLOCKED");
+    }
+
+    #[test]
+    fn test_config_default() {
+        let config = Config::default();
+        assert_eq!(config.sync_concurrency, 4);
+        assert_eq!(config.dashboard_host, "127.0.0.1");
+        assert_eq!(config.dashboard_port, 4242);
+        assert!(config.sync_dirs.is_empty());
+        assert!(config.exclude_patterns.is_empty());
+        assert_eq!(config.remote_delete_behavior, RemoteDeleteBehavior::Trash);
+    }
+
+    #[test]
+    fn test_remote_delete_behavior_serialize() {
+        let behavior = RemoteDeleteBehavior::Trash;
+        let serialized = serde_json::to_string(&behavior).unwrap();
+        assert_eq!(serialized, "\"trash\"");
+
+        let behavior = RemoteDeleteBehavior::Permanent;
+        let serialized = serde_json::to_string(&behavior).unwrap();
+        assert_eq!(serialized, "\"permanent\"");
+    }
+
+    #[test]
+    fn test_remote_delete_behavior_deserialize() {
+        let behavior: RemoteDeleteBehavior = serde_json::from_str("\"trash\"").unwrap();
+        assert_eq!(behavior, RemoteDeleteBehavior::Trash);
+
+        let behavior: RemoteDeleteBehavior = serde_json::from_str("\"permanent\"").unwrap();
+        assert_eq!(behavior, RemoteDeleteBehavior::Permanent);
+    }
+
+    #[test]
+    fn test_sync_dir() {
+        let sync_dir = SyncDir {
+            source_path: "/local/path".to_string(),
+            remote_root: "/remote/path".to_string(),
+        };
+
+        let serialized = serde_json::to_string(&sync_dir).unwrap();
+        let deserialized: SyncDir = serde_json::from_str(&serialized).unwrap();
+
+        assert_eq!(deserialized.source_path, "/local/path");
+        assert_eq!(deserialized.remote_root, "/remote/path");
+    }
+
+    #[test]
+    fn test_session_serialize() {
+        let session = Session {
+            uid: "test_uid".to_string(),
+            access_token: "test_token".to_string(),
+            refresh_token: "test_refresh".to_string(),
+            key_password: Some("password".to_string()),
+            primary_key: Some("key".to_string()),
+        };
+
+        let serialized = serde_json::to_string(&session).unwrap();
+        let deserialized: Session = serde_json::from_str(&serialized).unwrap();
+
+        assert_eq!(deserialized.uid, "test_uid");
+        assert_eq!(deserialized.access_token, "test_token");
+        assert_eq!(deserialized.key_password, Some("password".to_string()));
+    }
+
+    #[test]
+    fn test_sync_event_type_equality() {
+        assert_eq!(SyncEventType::CreateFile, SyncEventType::CreateFile);
+        assert_ne!(SyncEventType::CreateFile, SyncEventType::CreateDir);
+    }
+
+    #[test]
+    fn test_sync_job_status_equality() {
+        assert_eq!(SyncJobStatus::Pending, SyncJobStatus::Pending);
+        assert_ne!(SyncJobStatus::Pending, SyncJobStatus::Processing);
+    }
+}

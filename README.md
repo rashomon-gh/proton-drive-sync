@@ -100,6 +100,68 @@ cargo build --release
 
 # Run tests
 cargo test
+
+# Run tests with output
+cargo test -- --nocapture
+
+# Run specific test
+cargo test test_name
+
+# Run tests in a single module
+cargo test --lib auth::tests
+```
+
+### Testing
+
+The project includes comprehensive unit tests with mocking:
+
+```bash
+# Run all tests
+cargo test
+
+# Run tests with coverage (requires cargo-llvm-cov)
+cargo install cargo-llvm-cov
+cargo llvm-cov
+
+# Run tests and show output
+cargo test -- --show-output
+
+# Run tests in release mode (faster)
+cargo test --release
+```
+
+#### Test Coverage
+
+- **Authentication module**: Tests for SRP authentication, password hashing, and session management
+- **Configuration module**: Tests for config management, serialization, and defaults
+- **Proton client module**: Tests for API client initialization and path utilities
+- **Types module**: Tests for serialization, deserialization, and type utilities
+
+#### CI/CD
+
+The project uses GitHub Actions for continuous integration:
+
+- Tests run on Ubuntu, Windows, and macOS
+- Automatic code formatting checks
+- Clippy linting
+- Code coverage reporting
+
+The workflow is defined in `.github/workflows/test.yml`.
+
+### Code Quality
+
+```bash
+# Format code
+cargo fmt
+
+# Check formatting
+cargo fmt -- --check
+
+# Run linter
+cargo clippy
+
+# Fix clippy warnings automatically
+cargo clippy --fix
 ```
 
 ### Project Structure

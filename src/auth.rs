@@ -513,3 +513,108 @@ impl Default for AuthManager {
         Self::new()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_generate_client_ephemeral() {
+        let auth_manager = AuthManager::new();
+        let ephemeral1 = auth_manager.generate_client_ephemeral();
+        let ephemeral2 = auth_manager.generate_client_ephemeral();
+
+        // Should generate different values each time
+        assert_eq!(ephemeral1.len(), 64); // 32 bytes = 64 hex chars
+        assert_eq!(ephemeral2.len(), 64);
+        assert_ne!(ephemeral1, ephemeral2);
+    }
+
+    #[test]
+    fn test_bcrypt_hash_password() {
+        let auth_manager = AuthManager::new();
+        let password = "test_password";
+        let salt = "test_salt";
+
+        let hash1 = auth_manager.bcrypt_hash_password(password, salt).unwrap();
+        let hash2 = auth_manager.bcrypt_hash_password(password, salt).unwrap();
+
+        // bcrypt should generate valid hashes
+        assert!(!hash1.is_empty());
+        assert!(!hash2.is_empty());
+        // bcrypt generates different hashes each time due to internal salt
+        // but both should be valid bcrypt hashes
+        assert!(hash1.starts_with("$2b$"));
+        assert!(hash2.starts_with("$2b$"));
+    }
+
+    #[test]
+    fn test_verify_password() {
+        let auth_manager = AuthManager::new();
+        let password = "test_password";
+
+        // Hash the password
+        let hash = bcrypt::hash(password, DEFAULT_COST).unwrap();
+
+        // Verify correct password
+        assert!(auth_manager.verify_password(password, &hash).unwrap());
+
+        // Verify incorrect password
+        assert!(!auth_manager.verify_password("wrong_password", &hash).unwrap());
+    }
+
+    #[test]
+    fn test_generate_client_proof() {
+        let auth_manager = AuthManager::new();
+        let username = "test_user";
+        let password_hash = "test_hash";
+        let modulus = "test_modulus";
+        let server_ephemeral = "test_server_ephemeral";
+        let client_ephemeral = "test_client_ephemeral";
+        let salt = "test_salt";
+
+        let proof = auth_manager
+            .generate_client_proof(
+                username,
+                password_hash,
+                modulus,
+                server_ephemeral,
+                client_ephemeral,
+                salt,
+            )
+            .unwrap();
+
+        // Proof should be a hex string
+        assert!(!proof.is_empty());
+        assert_eq!(proof.len(), 128); // SHA512 = 64 bytes = 128 hex chars
+    }
+
+    #[test]
+    fn test_verify_server_proof() {
+        let auth_manager = AuthManager::new();
+
+        // Simplified verification always returns Ok
+        let result = auth_manager.verify_server_proof(
+            "test_hash",
+            "test_modulus",
+            "test_server_ephemeral",
+            "test_client_ephemeral",
+            "test_server_proof",
+        );
+
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_auth_manager_default() {
+        let auth_manager = AuthManager::default();
+        assert_eq!(auth_manager.api_base, PROTON_API_BASE);
+    }
+
+    #[test]
+    fn test_auth_manager_with_custom_api_base() {
+        let custom_base = "https://custom.api.com";
+        let auth_manager = AuthManager::with_api_base(custom_base.to_string());
+        assert_eq!(auth_manager.api_base, custom_base);
+    }
+}

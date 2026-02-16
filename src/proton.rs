@@ -500,3 +500,100 @@ impl PathUtils {
         format!("/{}", path.replace("//", "/"))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_path_utils_join() {
+        assert_eq!(PathUtils::join("/base", "name"), "/base/name");
+        assert_eq!(PathUtils::join("/base/", "name"), "/base/name");
+        assert_eq!(PathUtils::join("/base/", "/name"), "/base/name");
+        assert_eq!(PathUtils::join("", "name"), "/name");
+        assert_eq!(PathUtils::join("/", "name"), "/name");
+    }
+
+    #[test]
+    fn test_path_utils_parent() {
+        assert_eq!(PathUtils::parent("/folder/file.txt"), Some("/folder".to_string()));
+        assert_eq!(PathUtils::parent("/folder/subfolder/"), Some("/folder".to_string()));
+        assert_eq!(PathUtils::parent("/file.txt"), Some("/".to_string()));
+        assert_eq!(PathUtils::parent("/"), None);
+    }
+
+    #[test]
+    fn test_path_utils_filename() {
+        assert_eq!(PathUtils::filename("/folder/file.txt"), "file.txt");
+        assert_eq!(PathUtils::filename("/file.txt"), "file.txt");
+        assert_eq!(PathUtils::filename("/folder/"), "folder");
+    }
+
+    #[test]
+    fn test_path_utils_normalize() {
+        assert_eq!(PathUtils::normalize("/path"), "/path");
+        assert_eq!(PathUtils::normalize("path"), "/path");
+        assert_eq!(PathUtils::normalize("/path//file"), "/path/file");
+        assert_eq!(PathUtils::normalize(""), "/");
+    }
+
+    #[test]
+    fn test_proton_client_default() {
+        let session = Session {
+            uid: "test_uid".to_string(),
+            access_token: "test_token".to_string(),
+            refresh_token: "test_refresh".to_string(),
+            key_password: None,
+            primary_key: None,
+        };
+
+        let client = ProtonClient::new(session.clone());
+        assert_eq!(client.api_base, DRIVE_API_BASE);
+        assert_eq!(client.get_token(), "test_token");
+    }
+
+    #[test]
+    fn test_proton_client_with_custom_api_base() {
+        let session = Session {
+            uid: "test_uid".to_string(),
+            access_token: "test_token".to_string(),
+            refresh_token: "test_refresh".to_string(),
+            key_password: None,
+            primary_key: None,
+        };
+
+        let custom_base = "https://custom.drive.api.com";
+        let client = ProtonClient::with_api_base(custom_base.to_string(), session);
+        assert_eq!(client.api_base, custom_base);
+    }
+
+    #[test]
+    fn test_get_root_id() {
+        let session = Session {
+            uid: "test_uid".to_string(),
+            access_token: "test_token".to_string(),
+            refresh_token: "test_refresh".to_string(),
+            key_password: None,
+            primary_key: None,
+        };
+
+        let client = ProtonClient::new(session);
+        assert_eq!(client.get_root_id(), "root");
+    }
+
+    #[test]
+    fn test_session_borrow() {
+        let session = Session {
+            uid: "test_uid".to_string(),
+            access_token: "test_token".to_string(),
+            refresh_token: "test_refresh".to_string(),
+            key_password: None,
+            primary_key: None,
+        };
+
+        let client = ProtonClient::new(session.clone());
+        let borrowed_session = client.session();
+        assert_eq!(borrowed_session.uid, "test_uid");
+        assert_eq!(borrowed_session.access_token, "test_token");
+    }
+}

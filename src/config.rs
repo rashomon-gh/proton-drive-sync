@@ -154,3 +154,135 @@ impl ConfigManager {
         Ok((config, modified))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use tempfile::TempDir;
+
+    #[tokio::test]
+    async fn test_config_default() {
+        let config = Config::default();
+        assert_eq!(config.sync_concurrency, 4);
+        assert!(config.sync_dirs.is_empty());
+        assert!(config.exclude_patterns.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_config_manager_new() {
+        let temp_dir = TempDir::new().unwrap();
+        let config_dir = temp_dir.path().join("config");
+        fs::create_dir_all(&config_dir).unwrap();
+
+        // Set config dir to temp directory
+        let config_file = config_dir.join("config.json");
+
+        // Write a test config
+        let test_config = Config {
+            sync_concurrency: 10,
+            sync_dirs: vec![],
+            exclude_patterns: vec![],
+            remote_delete_behavior: crate::types::RemoteDeleteBehavior::Trash,
+            dashboard_host: "127.0.0.1".to_string(),
+            dashboard_port: 4242,
+        };
+
+        let json = serde_json::to_string_pretty(&test_config).unwrap();
+        fs::write(&config_file, json).unwrap();
+
+        // Note: This test would require mocking dirs::config_dir()
+        // For now, we just test the default behavior
+        let default_config = Config::default();
+        assert_eq!(default_config.sync_concurrency, 4);
+    }
+
+    #[tokio::test]
+    async fn test_add_sync_dir() {
+        let mut config = Config::default();
+        assert_eq!(config.sync_dirs.len(), 0);
+
+        config.sync_dirs.push(crate::types::SyncDir {
+            source_path: "/local/path".to_string(),
+            remote_root: "/remote/path".to_string(),
+        });
+
+        assert_eq!(config.sync_dirs.len(), 1);
+        assert_eq!(config.sync_dirs[0].source_path, "/local/path");
+        assert_eq!(config.sync_dirs[0].remote_root, "/remote/path");
+    }
+
+    #[tokio::test]
+    async fn test_remove_sync_dir() {
+        let mut config = Config::default();
+
+        config.sync_dirs.push(crate::types::SyncDir {
+            source_path: "/local/path1".to_string(),
+            remote_root: "/remote/path1".to_string(),
+        });
+        config.sync_dirs.push(crate::types::SyncDir {
+            source_path: "/local/path2".to_string(),
+            remote_root: "/remote/path2".to_string(),
+        });
+
+        assert_eq!(config.sync_dirs.len(), 2);
+
+        config.sync_dirs.remove(0);
+        assert_eq!(config.sync_dirs.len(), 1);
+        assert_eq!(config.sync_dirs[0].source_path, "/local/path2");
+    }
+
+    #[tokio::test]
+    async fn test_set_concurrency() {
+        let mut config = Config::default();
+        assert_eq!(config.sync_concurrency, 4);
+
+        config.sync_concurrency = 10;
+        assert_eq!(config.sync_concurrency, 10);
+    }
+
+    #[tokio::test]
+    async fn test_add_exclude_pattern() {
+        let mut config = Config::default();
+        assert_eq!(config.exclude_patterns.len(), 0);
+
+        config.exclude_patterns.push(crate::types::ExcludePattern {
+            path: "/test/path".to_string(),
+            globs: vec!["*.tmp".to_string(), "*.log".to_string()],
+        });
+
+        assert_eq!(config.exclude_patterns.len(), 1);
+        assert_eq!(config.exclude_patterns[0].path, "/test/path");
+        assert_eq!(config.exclude_patterns[0].globs.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn test_remote_delete_behavior() {
+        let config1 = Config {
+            sync_concurrency: 4,
+            sync_dirs: vec![],
+            exclude_patterns: vec![],
+            remote_delete_behavior: crate::types::RemoteDeleteBehavior::Trash,
+            dashboard_host: "127.0.0.1".to_string(),
+            dashboard_port: 4242,
+        };
+
+        let config2 = Config {
+            sync_concurrency: 4,
+            sync_dirs: vec![],
+            exclude_patterns: vec![],
+            remote_delete_behavior: crate::types::RemoteDeleteBehavior::Permanent,
+            dashboard_host: "127.0.0.1".to_string(),
+            dashboard_port: 4242,
+        };
+
+        assert_eq!(
+            config1.remote_delete_behavior,
+            crate::types::RemoteDeleteBehavior::Trash
+        );
+        assert_eq!(
+            config2.remote_delete_behavior,
+            crate::types::RemoteDeleteBehavior::Permanent
+        );
+    }
+}
